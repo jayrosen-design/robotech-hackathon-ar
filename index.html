@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartbeat AR</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script>
+      // Check if the browser supports WebXR and enable VR mode
+      // and stereoscopic mode if it does
+      if (navigator.xr) {
+        document.querySelector('#vr-button').addEventListener('click', () => {
+          navigator.xr.requestDevice().then((device) => {
+            device.requestSession({mode: 'immersive-vr'}).then((session) => {
+              const canvas = document.querySelector('canvas');
+              session.updateRenderState({
+                baseLayer: new XRWebGLLayer(session, canvas.getContext('webgl'), { antialias: true, stereo: 'stereo' })
+              });
+              document.querySelector('a-scene').renderer.xr.setSession(session);
+            });
+          });
+        });
+      }
+      
+      // Add fullscreen mode support
+      function enterFullscreen() {
+        const canvas = document.querySelector('canvas');
+        canvas.requestFullscreen();
+      }
+
+      function exitFullscreen() {
+        document.exitFullscreen();
+      }
+
+      // Enable gyro control and touch input in mobile AR mode
+      document.addEventListener('deviceorientation', (event) => {
+        const scene = document.querySelector('a-scene');
+        scene.camera.setAttribute('rotation', {
+          x: -event.beta,
+          y: -event.alpha,
+          z: event.gamma
+        });
+      });
+
+      document.addEventListener('touchmove', (event) => {
+const scene = document.querySelector('a-scene');
+const x = event.touches[0].clientX / window.innerWidth * 2 - 1;
+const y = -(event.touches[0].clientY / window.innerHeight * 2 - 1);
+const raycaster = new THREE.Raycaster();
+raycaster.setFromCamera({ x, y }, scene.camera);
+const intersects = raycaster.intersectObjects(scene.object3D.children, true);
+if (intersects.length > 0) {
+intersects[0].object.el.emit('click');
+}
+});
+
+// Set initial camera position to look at the items in the scene
+const scene = document.querySelector('a-scene');
+const camera = scene.querySelector('a-camera');
+camera.setAttribute('position', '0 1.6 0');
+
+</script>
+</head>
+<body>
+  <a-scene background="color: black">
+    <a-assets>
+      <audio id="heartbeat" src="heartbeat.wav"></audio>
+      <a-mixin id="button" hoverable clickable
+        material="shader: flat; color: #ff69b4; transparent: true; opacity: 0.8;"
+        onmouseenter="this.setAttribute('material', 'color: red')"
+        onmouseleave="this.setAttribute('material', 'color: #ff69b4')"
+      ></a-mixin>
+    </a-assets>
+<!-- Text and Heart icon entity -->
+<a-entity position="0 1.5 -3">
+    <a-plane geometry="primitive: plane; width: 3; height: 1;" material="shader: flat; transparent: true; opacity: 0;"></a-plane>
+    <a-entity text="value: Breathe Slowly; align: center; color: white; width: 3; wrap-count: 40;"></a-entity>
+  </a-entity>
+  
+  <!-- Heart rate button entity -->
+  <a-plane position="-1.5 -2 -5" width="1" height="1" mixin="button" onclick="document.querySelector('#heartbeat').play();">
+    <a-icon class="fa fa-heart" color="white" position="0 0 0.01" width="0.5" height="0.5"></a-icon>
+  </a-plane>
+  
+  <!-- Self-check button entity -->
+  <a-plane position="1.5 -2 -5" width="1" height="1" color="white" opacity="0.8" hoverable clickable
+    onmouseenter="this.setAttribute('material', 'color: black')"
+    onmouseleave="this.setAttribute('material', 'color: white')"
+    onclick="alert('Self-check')"
+  >
+    <a-text value="Self-check" color="black" align="center"></a-text>
+  </a-plane>
+  
+  <!-- Add a button for AR mode -->
+  <a-camera>
+    <a-entity cursor="fuse: true; fuseTimeout: 500" geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: white; shader: flat;"></a-entity>
+  </a-camera>
+  
+  <a-entity ui-button="value: AR mode; fontColor: black; backgroundColor: white; hoverFontColor: white; hoverBackgroundColor: black; clickBehavior: toggleAR"></a-entity>
+  
+  <!-- Default VR button for VR mode -->
+  <a-entity ui-button="value: VR mode; fontColor: black; backgroundColor: white; hoverFontColor: white; hoverBackgroundColor: black; clickBehavior: toggleVR"></a-entity>
+  
+  <a-camera id="camera">
+    <a-controls
+    look-controls-enabled="true"
+    wasd-controls-enabled="false"
+    gamepad-controls-enabled="false">
+    </a-camera>
+  
+    <!-- Heart rate button entity -->
+<a-plane position="-1.5 -2 -5" width="1" height="1" color="#ff69b4" hoverable clickable
+onmouseenter="this.setAttribute('color', 'red')"
+onmouseleave="this.setAttribute('color', '#ff69b4')"
+onclick="document.querySelector('#heartbeat').play();"
+>
+<a-entity class="fa fa-heart" scale="0.6 0.6 0.6" position="0 0 0.01"></a-entity>
+</a-plane>
+
+<!-- Self-check button entity -->
+<a-plane position="1.5 -2 -5" width="1" height="1" color="white" opacity="0.8" hoverable clickable
+onmouseenter="this.setAttribute('material', 'color: black')"
+onmouseleave="this.setAttribute('material', 'color: white')"
+onclick="alert('Self-check')"
+>
+<a-text value="Self-check" color="black" align="center"></a-text>
+</a-plane>
+
+<!-- Add a button for AR mode -->
+<a-entity ui-button="value: AR mode; fontColor: black; backgroundColor: white; hoverFontColor: white; hoverBackgroundColor: black; clickBehavior: toggleAR"></a-entity>
+
+<!-- Default VR button for VR mode -->
+<a-entity ui-button="value: VR mode; fontColor: black; backgroundColor: white; hoverFontColor: white; hoverBackgroundColor: black; clickBehavior: toggleVR"></a-entity>
+
+<a-entity
+laser-controls="hand: right"
+teleport-controls="cameraRig: #cameraRig; teleportOrigin: #cameraRig; button: trigger;"
+raycaster="objects: .teleportable;"
+line="color: white; opacity: 0.75;"
+></a-entity>
+
+<a-entity id="cameraRig">
+<a-entity id="head" position="0 1.6 0">
+  <a-entity id="leftHand" laser-controls="hand: left" visible="false"></a-entity>
+  <a-entity id="rightHand" laser-controls="hand: right" visible="false"></a-entity>
+</a-entity>
+</a-entity>
+
+<a-entity id="stereoscopic">
+<a-entity camera position="0 1.6 0">
+  <a-entity cursor="fuse: true; fuseTimeout: 500" geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: white; shader: flat;"></a-entity>
+</a-entity>
+
+
+<a-entity camera position="0 1.6 0">
+  <a-entity cursor="fuse: true; fuseTimeout: 500" geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: white; shader: flat;"></a-entity>
+</a-entity>
+
+  <!-- Add a button for VR mode -->
+  <a-entity id="vr-mode" position="-1.2 1.2 -2" ui-button="clickEvent: click; hoverEvent: hover; color: white; hoverColor: gray;">
+    <a-text value="VR Mode" width="2" align="center" color="black"></a-text>
+    <a-event name="click">
+      <script>
+        if (navigator.xr) {
+          navigator.xr.requestDevice().then((device) => {
+            device.requestSession({mode: 'immersive-vr'}).then((session) => {
+              const canvas = document.querySelector('canvas');
+              session.updateRenderState({
+                baseLayer: new XRWebGLLayer(session, canvas.getContext('webgl'), { antialias: true, stereo: 'stereo' })
+              });
+              document.querySelector('a-scene').renderer.xr.setSession(session);
+            });
+          });
+        }
+      </script>
+    </a-event>
+  </a-entity>
+  <!-- Add a button for AR mode -->
+  <a-entity id="ar-mode" position="1.2 1.2 -2" ui-button="clickEvent: click; hoverEvent: hover; color: white; hoverColor: gray;">
+    <a-text value="AR Mode" width="2" align="center" color="black"></a-text>
+    <a-event name="click">
+      <script>
+        if (navigator.xr) {
+          navigator.xr.requestDevice().then((device) => {
+            device.requestSession({mode: 'immersive-ar'}).then((session) => {
+              const canvas = document.querySelector('canvas');
+              session.updateRenderState({
+                baseLayer: new XRWebGLLayer(session, canvas.getContext('webgl'), { alpha: true, antialias: true })
+              });
+              document.querySelector('a-scene').renderer.xr.setSession(session);
+            });
+          });
+        }
+      </script>
+    </a-event>
+  </a-entity>
+  <!-- Heart icon entity -->
+  <a-entity position="-1.5 -2 -5">
+    <a-plane geometry="primitive: plane; width: 1; height: 1;" material="shader: flat; color: #ffffff; transparent: true; opacity: 0;">
+      <a-animation attribute="material.opacity" dur="10000" easing="linear" fill="forwards" loop="true" delay="2000" from="0" to="0.8"></a-animation>
+    </a-plane>
+    <a-entity class="clickable" onclick="document.querySelector('#heartbeat').play()">
+      <a-entity icon="icon: heart; color: red" position="0 0 0.1" scale="0.5 0.5 0.5"></a-entity>
+    </a-entity>
+  </a-entity>
+  <!-- Thermometer icon and number entity -->
+   <a-entity position="1.5 -2 -5">
+    <a-plane geometry="primitive: plane; width: 1; height: 1;" material="shader: flat; color: #ffffff; transparent: true; opacity: 0;">
+      <a-animation attribute="material.opacity" dur="10000" easing="linear" fill="forwards" loop="true" delay="2000" from="0" to="0.8"></a-animation>
+    </a-plane>
+    <a-entity icon="name: thermometer; color: #ff5722; size: 0.5" position="-0.2 0 0.01"></a-entity>
+    <a-entity text="value: 98.6 F; align: center; color: white; width: 0.8; wrap-count: 10;" position="0.3 0 0.01"></a-entity>
+  </a-entity>
+</a-scene>
+</body>
+</html>

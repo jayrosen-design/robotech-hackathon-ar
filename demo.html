@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slideshow</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      #background-image {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="background-image">
+    <script>
+      const imageList = ["1.png", "2.png", "3.png", "4.png", "5.png"];
+      const imageElement = document.getElementById("background-image");
+      let imageIndex = 0;
+
+      function loadImage() {
+        imageElement.src = imageList[imageIndex];
+        imageIndex = (imageIndex + 1) % imageList.length;
+        setTimeout(loadImage, 5000);
+      }
+
+      loadImage();
+    </script>
+  </body>
+</html>
